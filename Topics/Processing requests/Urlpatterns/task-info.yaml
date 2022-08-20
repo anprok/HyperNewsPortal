@@ -1,0 +1,27 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django.urls import path
+    from django.views import View
+
+
+    class CatView(View):
+        pass
+
+
+    class DogView(View):
+        pass
+
+
+    urlpatterns = [
+
+    ]
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/6480#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 15 Aug 2022 19:29:57 UTC
+record: -1

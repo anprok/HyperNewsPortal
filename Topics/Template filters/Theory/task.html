@@ -1,0 +1,49 @@
+<h2>Template filters</h2>
+<html><body><p>When preparing an HTML template, you can use Python objects or even some of their methods for your convenience. However, Python is not the main means of working with HTML pages, so you need to be familiar with other tools for manipulating data, such as template filters.</p>
+<h5 id="filters">Filters</h5>
+<p>You can use strings as arguments to the built-in <code class="language-django">len</code> function in Python, but you cannot use functions with arguments in templates. To get the size of a string in a template, we can use DTL filters.</p>
+<p><strong>Filters</strong> are special operations that work like Python functions: they receive arguments and return the result of their processing. For example, we can use the <code class="language-django">length</code> filter to get the size of a string.</p>
+<p style="text-align: center;"><img alt="" height="272" src="https://ucarecdn.com/23714893-ce6a-4402-80e9-149a4d882218/-/crop/1775x1161/404,162/-/preview/" width="416"/></p>
+<p>To use <code class="language-django">length</code> in a template, apply this sequence: <em>expression, pipe operator, filter</em>. Pass an expression to the filter and get the result.</p>
+<pre><code class="language-django">{{ "Lorem ipsum" | length }}</code></pre>
+<p>It works not only with constants but with any of your variables.</p>
+<h5 id="filters-with-arguments">Filters with arguments</h5>
+<p>Sometimes we want to make simple math calculations, for example, find the sum of two numbers. Bad news is, you cannot do math in templates with the operators <code class="language-django">+</code> and  <code class="language-django">- </code> like in Python. Good news is, we can use filters with arguments for this purpose!</p>
+<p>To add two numbers in a template, add a colon after the filter and pass the second argument to it:</p>
+<pre><code class="language-django">{{ 100000 | add:500 }}</code></pre>
+<p>Don't forget to use a colon! If you omit it, the template won't work.</p>
+<p>As you see, the syntax is not that different, and there's nothing scary about additional arguments. </p>
+<p></p><div class="alert alert-warning"> Only some filters have arguments. Please refer to <a href="https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#built-in-filter-reference" rel="noopener noreferrer nofollow" target="_blank">the documentation</a> to prevent mistakes in your code and see what other filters Django has to offer. </div><p></p>
+<h5 id="pipelines">Pipelines</h5>
+<p>One filter is fine but sometimes we need to combine them, just like calling a function from another function. In such situations, we can use pipelines.</p>
+<p><strong>Pipelines </strong>take their name from the use of pipe operators that pass the result of the filter processing <em>through a pipe</em> to the next filter. Using two, three, or four filters isn't too different from using just one because the syntax stays the same, and the outcome of the previous step becomes the input in the next.</p>
+<p>For example, say we want to show the count of page views to our users. Assuming that something bad may happen and we forget to pass the necessary variable, we use the <code class="language-django">default</code> value to show at least 0 views and thus make the layout of the page consistent.</p>
+<pre><code class="language-django">{{ counter | default:0 | add:1 }}</code></pre>
+<p>We also add 1 to the counter to account for the current view of the page.</p>
+<h5 id="example">Example</h5>
+<p>John Doe asked us again to redesign his blog. He wants to see some extra information for every post he made. Here is what John's first post looked like:</p>
+<pre><code class="language-python">import datetime
+
+post = {
+    "created_at": datetime.datetime(2019, 5, 20, 14, 15, 43),
+    "text": "My first post",
+    "comments": [
+        "My congratulations!!",
+        "Looking forward to the second one",
+    ],
+}</code></pre>
+<p>Let's count the number of words in it, display when the record was created, and how many likes it has now:</p>
+<pre><code class="language-django">&lt;html&gt;
+  &lt;body&gt;
+    &lt;div&gt;{{ post.text }}&lt;/div&gt;
+    &lt;div&gt;There are {{ post.text.split | length }} words in a post&lt;/div&gt;
+    &lt;div&gt;Created at: {{ post.created_at | date:"Y.m.d" }}&lt;/div&gt;
+    &lt;div&gt;Likes: {{ post.likes | default:0 | add:1 }}&lt;/div&gt;
+    &lt;div&gt;{{ post.comments | join:"&lt;br /&gt;" }}&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Notice how even though we forget to pass likes in the initial structure of a post, the <code class="language-django">default</code> filter provides us the zero value. We think that John himself likes his post, and we apply the <code class="language-django">add</code> filter to add one more like to it.</p>
+<p></p><div class="alert alert-primary"> Check the documentation for the information on the <a href="https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#date" rel="noopener noreferrer nofollow" target="_blank">date</a> and <a href="https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#join" rel="noopener noreferrer nofollow" target="_blank">join</a> filters. </div><p></p>
+<h5 id="conclusion">Conclusion</h5>
+<p>Let's recap: in this topic, we learned what template filters are and how we can use them. Filters are just like Python functions: some of them have arguments, others don't, and just like with functions, we can combine them to get the final result.</p></body></html>

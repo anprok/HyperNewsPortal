@@ -1,0 +1,53 @@
+<h2>Template tags</h2>
+<html><body><p>One of the basic principles in programming is to reuse code that you already have. There is a good chance that we'll have some identical parts of code for different pages, for example, <em>header</em>, <em>footer</em>, or <em>contacts. </em>It makes sense to define them once and then reuse them elsewhere. This is one of the things that Django tags can help us with. Let's learn more about where and how we can use them!</p>
+<h5 id="include">Include</h5>
+<p><strong>Tags</strong> are special constructions embraced in the operators <code class="language-html">{%</code> and <code class="language-html">%}</code>. They can help you process parts of your template or include external resources like predefined HTML code or even other templates. You should be already familiar with the <code class="language-html">{% if %}</code> and <code class="language-html">{% for %}</code> tags.</p>
+<p></p><div class="alert alert-primary"> Some tags like <code class="language-html">{% if %}</code> and <code class="language-html">{% endif %}</code> need opening and closing parts to work correctly, others don't. Please refer to the <a href="https://docs.djangoproject.com/en/3.0/ref/templates/builtins/#" rel="noopener noreferrer nofollow" target="_blank">documentation</a> for more information about tags. </div><p></p>
+<p>Let's take a look at specific examples. Our blogger friend John Doe needs some help with his blog: he wants to show his contacts in each post. We create a simple template in the file <em>blog/templates/blog/contacts.html</em> for the <em>contacts</em> section on a page:</p>
+<pre><code class="language-html">&lt;table&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Phone:&lt;/td&gt;
+    &lt;td&gt;0-123-456-7890&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Email:&lt;/td&gt;
+    &lt;td&gt;john@doe.com&lt;/td&gt;
+  &lt;tr&gt;
+&lt;/table&gt;</code></pre>
+<p>To include it in any other template, we can use the <code class="language-html">{% include %}</code> tag:</p>
+<pre><code class="language-django">&lt;!-- some content --&gt;
+{% include "blog/contacts.html" %}
+&lt;!-- some content --&gt;</code></pre>
+<p>This way, we don't need to copy the same code with contacts over and over again: we just include it. If we ever want to change what the <em>contacts</em> look like, all we need is to change the <em>contacts.html</em> file, and all other templates will have the updated <em>contacts</em> right away.</p>
+<h5 id="extend">Extend</h5>
+<p>You know how to include predefined parts to create a new template. Once you start using this technique, you'll probably notice that the includes are repeating across different templates. Our goal was to minimize repetition, but it seems that it's still there. To solve this problem, let's define the base template, extend it, and populate only the parts that are different.</p>
+<p>As a rule, all HTML pages for a particular site have a lot in common. If you don't want to repeat the same code over and over, you can slice your template into several <strong>blocks</strong> and then redefine only the blocks you need. </p>
+<p>Let's make the base template in the file <em>blog/templates/blog/base.html</em> with the <code class="language-html">title</code> and <code class="language-html">content</code> blocks in it:</p>
+<pre><code class="language-django">&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;{% block title %} John Doe's Blog {% endblock %}&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    {% include "blog/contacts.html" %}
+    {% block content %} Hello {% endblock %}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Now you can extend a custom page from the base. To make one, add <code class="language-html">{% extends "base.html" %}</code> at the beginning of your file:</p>
+<pre><code class="language-django">{% extends "base.html" %}
+{% block content %} {{ block.super }} world! {% endblock %}
+</code></pre>
+<p>If you want to extend the content of the default block, you can paste the <code class="language-html">{{ block.super }}</code> variable and then add new data to the block. The blocks that you didn't redefine will simply stay the same. This way, you can make a new page for the site with just a few lines without having to copy the entire HTML layout.</p>
+<h5 id="csrf-token">CSRF token</h5>
+<p>To send data to the server, we use HTML forms. Through forms, users can send confidential data and make financial transactions, so we should secure the forms from potential spoofing.</p>
+<p>Let's create a template to add comments to posts. Saving comments in handlers is too much for now, so let's just prepare a section that we'll include later when we learn how to process requests on the server:</p>
+<pre><code class="language-django">&lt;form action="/comment/save" method="post"&gt;
+  {% csrf_token %}
+  &lt;input name="text"&gt;
+  &lt;input type="submit" value="Save"&gt;
+&lt;/form&gt;</code></pre>
+<p>If you look closely at the code snippet, you'll surely notice a tag <code class="language-html">{% csrf_token %}</code>. <strong>CSRF</strong> stands for <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" rel="noopener noreferrer nofollow" target="_blank">Cross-Site Request Forgery</a>. We don't want any fraud, so in forms, we must always use this tag to secure our applications. CSRF token is a generated sequence of symbols that the server uses to identify the user's session. If the sequence matches, the form is considered reliable.</p>
+<p></p><div class="alert alert-primary"> Including CSRF tokens in the POST requests is obligatory in Django by default. You can turn off the verification in your handlers, but it's highly recommended to keep it. </div><p></p>
+<p>There are a lot more <a href="https://owasp.org/www-project-top-ten/" rel="noopener noreferrer nofollow" target="_blank">security issues</a> that we can face in our web applications, but with the CSRF token we'll have one problem less.</p>
+<h5 id="conclusion">Conclusion</h5>
+<p>In this topic, we learned how to include one template into another and create a base template that can be partially extended. These tools are going to be very helpful as your project grows. Don't forget about security: add CSRF tokens in forms to secure sessions for our users.</p></body></html>

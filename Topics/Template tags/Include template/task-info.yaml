@@ -1,0 +1,15 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    template = """
+
+    """
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/10003#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Wed, 17 Aug 2022 12:46:21 UTC
+record: -1

@@ -1,0 +1,19 @@
+<html>
+  <body>
+    <h2>{{ title }}</h2>
+    <form action="/news/" method="get">{% csrf_token %}
+        <p>Search:</p>
+        <input name="q">
+        <button type="submit">Search</button>
+    </form>
+      {% for key,value in groupped_news.items %}
+        <h4>{{ key }}</h4>
+            <ul>
+              {% for news in value %}
+                <li><a href="/news/{{ news.link }}/">{{ news.title }}</a></li>
+              {% endfor %}
+            </ul>
+      {% endfor %}
+  <a href="/news/create/">Create news</a>
+  </body>
+</html>

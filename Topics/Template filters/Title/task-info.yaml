@@ -1,0 +1,17 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    template = """
+    <html>
+      <h2> </h2>
+    </html>
+    """
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/6400#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Tue, 16 Aug 2022 16:19:12 UTC
+record: -1

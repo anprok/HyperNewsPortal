@@ -1,0 +1,11 @@
+<html>
+  <body>
+    <form action="/news/create/" method="post">{% csrf_token %}
+        <p>Title:</p>
+        <input name="title">
+        <p>Text:</p>
+        <input name="text">
+        <button type="submit">Post</button>
+    </form>
+    {% include "main_block.html" %}
+  </body>

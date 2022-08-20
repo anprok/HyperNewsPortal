@@ -1,0 +1,87 @@
+<h2>Processing requests</h2>
+<html><body><p>Any web application exists to provide information to clients and receive it from them. A client sends a request to the server and it answers with some response. Usually, the communication between these two sides is processed by the HTTP protocol using <code class="java">GET</code>, <code class="java">POST</code> and some other types of requests.</p>
+<p>In this topic, we shall focus on processing <code class="java">GET</code> requests in Django as they are most frequently used.</p>
+<h5 id="how-to-process-get-requests">How to process GET requests</h5>
+<p>My friend Willy Wonka heard about Django, and now he wants to use it to advertise the sorts of candy his factory makes. To help him reach the goal, we will create a simple response with candies in it.</p>
+<p>We assume that the name of the Django project is "<em>factory</em>" and the name of the application is "<em>candies</em>"<em>.</em></p>
+<p>Let's look at the assortment:</p>
+<pre><code class="java">candies = {
+    "Fudge":  {
+        "color": "beige",
+        "price": "priceless",
+        "available": 100,
+    },
+    "Chocolate shock": {
+        "color": "brown",
+        "price": "precious",
+        "available": 50,
+    },
+    "Marshmallow" : {
+        "color": "pink",
+        "price": "all the money in the world",
+        "available": 200,
+    },
+}
+</code></pre>
+<p>On the main page, Willy wants to put only the assortment list and nothing else. So when you go to his site, you send a <strong>GET</strong> request to his service. GET is a method used to receive data from the server.</p>
+<p>Django has classes that take over routine work with HTTP requests, so the only part you should implement by yourself is the response. The response is an instance of the inheritors of Django <code class="java">HttpResponseBase</code> class, like <code class="java">HttpResponse</code>. We add this piece of code to the <em>candies/views.py</em> module:</p>
+<pre><code class="java">from django.http import HttpResponse
+from django.views import View
+
+class MainPageView(View):
+    def get(self, request, *args, **kwargs):
+        html =  "\n".join(f"&lt;div&gt;{candy}&lt;/div&gt;" for candy in candies)
+        return HttpResponse(html)</code></pre>
+<p>First, we make a new class and inherit it from the <code class="java">View</code>. To provide a method to handle the GET request, we simply define a method with the name "<em>get</em>". This is a general rule in Django, so if you want to make a POST handler, you define a method with the name "<em>post</em>", et cetera.</p>
+<p>So, back to our sweet matters: passing HTML as a string to the <code class="java">HttpResponse</code> class, we return a simple HTML page with a list of candies. Django application does the rest of the work by itself to send the data to the client. It's that simple to make a response.</p>
+<h5 id="not-found-pages">Not Found Pages</h5>
+<p>For each customer who wants to know more about a particular candy, we make another page and class to process that request. And if the customer asks us about a nonexistent candy, we've got to report that we couldn't find it. The corresponding HTTP status code is 404, but we don't see any codes in the previous example. So how does it even work?</p>
+<p>As we said, Django does a lot of work under the hood. The HttpResponse set status code 200 in the answer for you, which means that the communication was OK. We can either change this code in the HttpResponse class (<code class="java">HttpResponse(status=404)</code>), or use the Exception class <code class="java">Http404</code><strong>,</strong> which will signal to a user that they're trying to GET a page that doesn't exist.</p>
+<p>Let's make a handler for a custom candy page in the same module:</p>
+<pre><code class="java">from django.http import HttpResponse, Http404
+from django.views import View
+
+class CandyView(View):
+    def get(self, request, candy_name, *args, **kwargs):
+        if candy_name not in candies:
+            raise Http404  # or return HttpResponse(status=404)
+
+        candy_info = "".join(
+            f"&lt;tr&gt;&lt;td&gt;{key}:&lt;/td&gt;&lt;td&gt;{value}&lt;/td&gt;&lt;/tr&gt;"
+            for key, value in candies[candy_name].items()
+        )
+        return HttpResponse(f"&lt;table&gt;&lt;tbody&gt;{candy_info}&lt;/tbody&gt;&lt;/table&gt;")</code></pre>
+<p>As you see, the third parameter in our GET method is cryptic "<em>candy_name</em>". We will learn how to pass this positional parameter at the next step; for now, just assume that we get the name of the candy from a user's request. If we have this sort of candy, we display all the information about it. But if we don't have one, we <code class="java">raise Http404</code> Exception because we can't find it in our stock. </p>
+<p></p><div class="alert alert-warning">Pay attention that we return an instance of HttpResponse and raise Http404 since Http404 is an exception class</div><p></p>
+<h5 id="url-routing">URL Routing</h5>
+<p>We create handlers for requests, but how does Django choose the appropriate one? For this purpose, we define URL routes in <em>factory/urls.py</em> module: </p>
+<pre><code class="java">from django.urls import path, re_path
+from candies.views import MainPageView, CandyView
+
+urlpatterns = [
+    path("candies/", MainPageView.as_view()),
+    re_path("candies/(?P&lt;candy_name&gt;[^/]*)/?", CandyView.as_view()),
+]
+</code></pre>
+<p>For example, if Willy's site has the hostname<em> www.willywonka.com</em>, then the assortment page will be available at the address <em>www.willywonka.com/candies,</em> and information specifically about fudge will be found at <em>www.willywonka.com/candies/Fudge</em>. </p>
+<p>In the second path link, we see a regular expression <code class="java">(?P&lt;candy_name&gt;[^/]*)</code>. This expression extracts the variable <code class="java">candy_name</code> from the link and passes it to the handler. That's how we get our <code class="java">candy_name</code> in the previous example.</p>
+<p>To bind a link with an appropriate handler, we can call <code class="java">path</code> or <code class="java">re_path</code> functions and add the result to the <code class="java">urlpatterns</code> list. The first argument of each function receives a string that describes a pattern for a link that comes after the hostname. It can be a simple string in <code class="java">path</code> function and a regular expression in case of <code class="java">re_path</code>. The second argument is a handler that will process a request.</p>
+<p>The order of the links in <code class="java">urlpatterns</code> is kept when Django searches for the required handler. If you paste regular expression <code class="java">"candies/(?P&lt;candy_name&gt;[^/]*)/?"</code> before <code class="java">"candies/"</code>, you will never reach the second one since <code class="java">"candies/"</code> is a subset of the first regular expression. So you should paste the superset expression latter on the list.</p>
+<p></p><div class="alert alert-warning">The path "" (empty string) is a superset for all routes. If you paste it first in the URL patterns list with call to <code class="java">re_path</code>, all the other handlers will become unreachable.</div><p></p>
+<p>There are some other ways to configure URLs. If an assortment of candies would be organized in a database instead of a dictionary, we could use primary key of each object instance for generating pages:</p>
+<pre><code class="java">urlpatterns = [
+    path("candies/&lt;int:pk&gt;", CandyView.as_view()),
+]
+
+</code></pre>
+<p>Tag &lt;int&gt; is a path converter, which returns an integer. There are some other converters available by default: str (non-empty string), slug (short label for something), uuid (a special formatted string), etc. </p>
+<p>As there are not so many parameters our candies have to show some more ways of creating paths, let’s take another example for a moment. If we work with books, we can configure URLs according to publication date information. And if our app not only stores books’ lists and some related data, but provides features for reading texts of those books, we may need path to each page of a book. Here are following examples:</p>
+<pre><code class="java">urlpatterns = [
+   path("books/&lt;yyyy:year&gt;/"), views.year_pub),
+   path("book/page&lt;int:number&gt;"), views.book_content),
+]
+</code></pre>
+<p>Note, that there should be functions in views to output a sorted by year list of books or the appropriate page of the text. </p>
+<h5 id="conclusion">Conclusion</h5>
+<p>To process a request in the Django application, you should define a handler and implement all methods that it can process. If you inherit this class from the <code class="java">View</code>, you should match the desired HTTP verb with the same method in your class. Specifically, if you want to process the GET request, you should define the "<em>get</em>" method and return an instance of the Django <code class="java">HttpResponse</code> class.</p>
+<p>After you do that, you can bind this handler to the link it belongs to. Just add it to the list of <code class="java">urlpatterns</code> at the <em>urls.py</em> module.</p></body></html>
